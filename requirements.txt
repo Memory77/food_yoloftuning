@@ -1,0 +1,10 @@
+opencv-python
+ultralytics
+roboflow
+streamlit
+streamlit-webrtc
+opencv-python-headless
+av
+torch 
+torchvision 
+ultralytics
