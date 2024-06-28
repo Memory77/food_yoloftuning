@@ -2,13 +2,37 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 from ultralytics import YOLO
 import av
+import os
+import openai
+from dotenv import load_dotenv
 import cv2
 
-# Charger le modèle YOLOv9 pré-entraîné
-model_path = 'best.pt'
+# Load environment variables from .env file
+load_dotenv()
+
+# Configure OpenAI with Azure credentials
+openai.api_key = os.getenv('openai_api_key')
+openai.api_base = os.getenv('openai_api_key_base')
+openai.api_type = 'azure'
+openai.api_version = os.getenv('openai_api_version')
+
+# Function to call OpenAI API and get a response
+def get_response(prompt):
+    response = openai.ChatCompletion.create(
+        engine=os.getenv('openai_api_deployment'),
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=150
+    )
+    return response.choices[0].message['content'].strip()
+
+# Load YOLO model
+model_path = 'first_model9s.pt'
 model = YOLO(model_path)
 
-# Dictionnaire des calories par aliment
+# Dictionary of calories per food item
 calories_dict = {
     'Apple': 52, 'Apricot': 48, 'Aubergine': 25, 'Avocado': 160, 'Banana': 89,
     'Beef Curry': 150, 'Beef Steak': 271, 'Bread': 265, 'Cabbage': 25, 'Carrot': 41,
@@ -34,13 +58,13 @@ class VideoProcessor(VideoProcessorBase):
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
 
-        # Effectuer l'inférence
+        # Perform inference
         results = self.model(img)
 
-        # Extraire les noms des classes détectées
+        # Extract detected class names
         self.detected_items = [self.model.names[int(cls)] for cls in results[0].boxes.cls]
 
-        # Dessiner les boîtes de détection sur l'image
+        # Draw detection boxes on the image
         annotated_img = results[0].plot()
 
         return av.VideoFrame.from_ndarray(annotated_img, format="bgr24")
@@ -48,7 +72,7 @@ class VideoProcessor(VideoProcessorBase):
     def get_detected_items(self):
         return self.detected_items
 
-st.title("Détection d'aliments en temps réel avec YOLOv9")
+st.title("Real-Time Food Detection and Recipe Suggestion")
 
 webrtc_ctx = webrtc_streamer(key="example", 
                              video_processor_factory=VideoProcessor, 
@@ -56,7 +80,13 @@ webrtc_ctx = webrtc_streamer(key="example",
 
 if webrtc_ctx.video_processor:
     detected_items = webrtc_ctx.video_processor.get_detected_items()
-    if st.button("Scanner"):
+    if st.button("Scan"):
         total_calories = sum(calories_dict.get(item, 0) for item in detected_items)
-        st.write(f"Aliments détectés : {', '.join(detected_items)}")
-        st.write(f"Calories totales : {total_calories} kcal")
+        st.write(f"Detected items: {', '.join(detected_items)}")
+        st.write(f"Total calories: {total_calories} kcal")
+
+        # Create a prompt for the recipe suggestion
+        prompt = f"Je possède ces différents ingrédients : {', '.join(detected_items)}. Peux tu me suggérer différentes recettes ? Ne compte pas finger parmis les ingrédients"
+        recipe = get_response(prompt)
+        st.write("Suggested recipe:")
+        st.write(recipe)
