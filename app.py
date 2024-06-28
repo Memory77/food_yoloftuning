@@ -60,3 +60,5 @@ if webrtc_ctx.video_processor:
         total_calories = sum(calories_dict.get(item, 0) for item in detected_items)
         st.write(f"Aliments détectés : {', '.join(detected_items)}")
         st.write(f"Calories totales : {total_calories} kcal")
+        st.write(f"add test") 
+    
