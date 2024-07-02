@@ -1,0 +1,32 @@
+apiVersion: '2021-03-01'
+location: francecentral
+name: myContainerInstance
+properties:
+  containers:
+  - name: app-food-container
+    properties:
+      image: memory77/app_food:latest
+      ports:
+      - port: 8501
+      resources:
+        requests:
+          cpu: 2.0
+          memoryInGB: 4.5
+      environmentVariables:
+      - name: openai_api_key
+        value: your_openai_api_key
+      - name: openai_api_key_base
+        value: your_openai_api_key_base
+      - name: openai_api_version
+        value: your_openai_api_version
+      - name: openai_api_deployment
+        value: your_openai_api_deployment
+  osType: Linux
+  ipAddress:
+    type: Public 
+    ports:
+    - port: 8501
+      protocol: TCP
+  restartPolicy: Always
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups

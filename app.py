@@ -29,7 +29,7 @@ def get_response(prompt):
     return response.choices[0].message['content'].strip()
 
 # Load YOLO model
-model_path = 'first_model9s.pt'
+model_path = 'train50ep10m/best.pt'
 model = YOLO(model_path)
 
 # Dictionary of calories per food item

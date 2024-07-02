@@ -9,4 +9,4 @@ torch
 torchvision 
 ultralytics
 openai==0.28
-
+python-dotenv
