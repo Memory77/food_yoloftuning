@@ -6,6 +6,7 @@ import os
 import openai
 from dotenv import load_dotenv
 import cv2
+import dill
 
 # Load environment variables from .env file
 load_dotenv()
